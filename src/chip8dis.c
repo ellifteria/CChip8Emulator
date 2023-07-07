@@ -12,15 +12,32 @@ void disassemble_chip8_op(uint8_t *code_buffer, int pc)
   switch (first_nib)
   {
     case 0x00:
-      printf("0 not handled yet");
+      switch (*(code + 1))
+      {
+        case 0xe0:
+          printf("%-10s", "CLS");
+          break;
+
+        case 0xee:
+          printf("%-10s", "RTS");
+          break;
+
+        default:
+          printf("UNKNOWN 0");
+          break;
+      }
       break;
 
     case 0x01:
-      printf("1 not handled yet");
+      {
+        printf("%-10s $%01x%02x", "JUMP", *(code + 0) & 0xf, *(code + 1));
+      }
       break;
 
     case 0x02:
-      printf("2 not handled yet");
+      {
+        printf("%-10s $%01x%02x", "CALL", *(code + 0) & 0xf, *(code + 1));
+      }
       break;
 
     case 0x03:

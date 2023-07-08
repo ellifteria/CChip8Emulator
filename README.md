@@ -1,2 +1,2 @@
-# Chip-8 Emulator in C
+# Chip-8 Emulator implemented in C
 

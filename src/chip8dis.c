@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void disassemble_chip8_op(uint8_t *code_buffer, int pc)
+void disassemble_chip8_op(unsigned char* code_buffer, int pc)
 {
   uint8_t *code = code_buffer + pc;
   uint8_t first_nib = *(code + 0) >> 4;
@@ -12,90 +12,243 @@ void disassemble_chip8_op(uint8_t *code_buffer, int pc)
   switch (first_nib)
   {
     case 0x00:
-      switch (*(code + 1))
       {
-        case 0xe0:
-          printf("%-10s", "CLS");
-          break;
+        uint8_t second_byte = *(code + 1);
+        switch (second_byte)
+        {
+          case 0xe0:
+            printf("%-10s", "CLS");
+            break;
 
-        case 0xee:
-          printf("%-10s", "RTS");
-          break;
+          case 0xee:
+            printf("%-10s", "RTS");
+            break;
 
-        default:
-          printf("UNKNOWN 0");
-          break;
+          default:
+            printf("UNKNOWN 0");
+            break;
+        }
       }
       break;
 
     case 0x01:
       {
-        printf("%-10s $%01x%02x", "JUMP", *(code + 0) & 0xf, *(code + 1));
+        uint8_t addr_p1 = *(code + 0) & 0x0f;
+        uint8_t addr_p2 = *(code + 1);
+        printf("%-10s $%01x%02x", "JUMP", addr_p1, addr_p2);
       }
       break;
 
     case 0x02:
       {
-        printf("%-10s $%01x%02x", "CALL", *(code + 0) & 0xf, *(code + 1));
+        uint8_t subrout_p1 = *(code + 0) & 0x0f;
+        uint8_t subrout_p2 = *(code + 1);
+        printf("%-10s $%01x%02x", "CALL", subrout_p1, subrout_p2);
       }
       break;
 
     case 0x03:
-      printf("3 not handled yet");
+      {
+        uint8_t reg = *(code + 0) & 0x0f;
+        uint8_t const8 = *(code + 1);
+        printf("%-10s V%01X,#$%02x", "SKIP.EQ", reg, const8);
+      }
       break;
 
     case 0x04:
-      printf("4 not handled yet");
+      {
+        uint8_t reg = *(code + 0) & 0x0f;
+        uint8_t const8 = *(code + 1);
+        printf("%-10s V%01X,#$%02x", "SKIP.NE", reg, const8);
+      }
       break;
 
     case 0x05:
-      printf("5 not handled yet");
+      {
+        uint8_t reg_1 = *(code + 0) & 0x0f;
+        uint8_t reg_2 = *(code + 1) >> 4;
+        uint8_t last_nib = *(code + 1) & 0x0f;
+        switch (last_nib)
+        {
+          case 0:
+            printf("%-10s V%01X,V%01X", "SKIP.EQ", reg_1, reg_2);
+            break;
+          default:
+            printf("UNKNOWN 5");
+            break;
+          
+        }
+      }
       break;
 
     case 0x06:
       {
         uint8_t reg = *(code + 0) & 0x0f;
-        printf("%-10s V%01X,#$%02x", "MVI", reg, *(code + 1));
+        uint8_t const8 = *(code + 1);
+        printf("%-10s V%01X,#$%02x", "MVI", reg, const8);
       }
       break;
 
     case 0x07:
-      printf("7 not handled yet");
+      {
+        uint8_t reg = *(code + 0) & 0x0f;
+        uint8_t const8 = *(code + 1);
+        printf("%-10s V%01X,#$%02x", "ADI", reg, const8);
+      }
       break;
 
     case 0x08:
-      printf("8 not handled yet");
+      {
+        {
+          uint8_t reg_1 = *(code + 0) & 0x0f;
+          uint8_t reg_2 = *(code + 1) >> 4;
+          uint8_t last_nib = *(code + 1) & 0x0f;
+          switch (last_nib)
+          {
+            case 0:
+              printf("%-10s V%01X,V%01X", "MOV", reg_1, reg_2);
+              break;
+            case 1:
+              printf("%-10s V%01X,V%01X", "OR", reg_1, reg_2);
+              break;
+            case 2:
+              printf("%-10s V%01X,V%01X", "AND", reg_1, reg_2);
+              break;
+            case 3:
+              printf("%-10s V%01X,V%01X", "XOR", reg_1, reg_2);
+              break;
+            case 4:
+              printf("%-10s V%01X,V%01X", "ADD.", reg_1, reg_2);
+             break;
+            case 5:
+              printf("%-10s V%01X,V%01X", "SUB.", reg_1, reg_2);
+              break;
+            case 6:
+              printf("%-10s V%01X", "SHR.", reg_1);
+              break;
+            case 7:
+              printf("%-10s V%01X,V%01X", "SUBB.", reg_1, reg_2);
+              break;
+            case 0xe0:
+              printf("%-10s V%01X", "SHL.", reg_1);
+              break;
+            default:
+              printf("UNKNOWN 8");
+              break;
+          }
+        }
+      }
       break;
 
     case 0x09:
-      printf("9 not handled yet");
+      {
+        uint8_t reg_1 = *(code +0) & 0x0f;
+        uint8_t reg_2 = *(code + 1) >> 4;
+        uint8_t last_nib = *(code + 1) & 0x0f;
+        switch (last_nib) 
+        {
+          case 0:
+            printf("%-10s V%01X,V%01X", "SKIP.NE", reg_1, reg_2);
+            break;
+          default:
+            printf("UNKNOWN 9");
+            break;
+        }
+      }
       break;
 
     case 0x0a:
       {
-        uint8_t addres_shi = *(code + 0) & 0x0f;
-        printf("%-10s I,#$%01x%02x", "MVI", addres_shi, *(code + 1));
+        uint8_t addr_p1 = *(code + 0) & 0x0f;
+        uint8_t addr_p2 = *(code + 1);
+        printf("%-10s I,#$%01x%02x", "MVI", addr_p1, addr_p2);
       }
       break;
       
     case 0x0b:
-      printf("b not handled yet");
+      {
+        uint8_t addr_p1 = *(code + 0) & 0x0f; 
+        uint8_t addr_p2 = *(code + 1);
+        printf("%-10s $%01x,#%02x(V0)", "JUMP", addr_p1, addr_p2);
+      }
       break;
 
     case 0x0c:
-      printf("c not handled yet");
+      {
+        uint8_t reg = *(code + 0) & 0x0f;
+        uint8_t const8 = *(code + 1);
+        printf("%-10s V%01X,#$%02X", "RNDMSK", reg, const8);
+      }
       break;
 
     case 0x0d:
-      printf("d not handled yet");
+      {
+        uint8_t reg_1 = *(code + 0) & 0x0f;
+        uint8_t reg_2 = *(code + 1) >> 4;
+        uint8_t const4 = *(code + 1) & 0x0f;
+        printf("%-10s V%01X,V%01X,#$%01x", "SPRITE", reg_1, reg_2, const4);
+      }
       break;
 
     case 0x0e:
-      printf("e not handled yet");
+      {
+        uint8_t reg = *(code + 0) &0x0f;
+        uint8_t second_byte = *(code + 1);
+        switch (second_byte)
+        {
+          case 0x9e:
+            printf("%-10s V%01X", "STRIP.KEY", reg);
+            break;
+
+          case 0xa1:
+            printf("%-10s V%01X", "STRIP.NOKEY", reg);
+            break;
+
+          default:
+            printf("UNKNOWN E");
+            break;
+        }
+      }
       break;
 
     case 0x0f:
-      printf("f not handled yet");
+      {
+        uint8_t reg = *(code + 0) & 0x0f;
+        uint8_t second_byte = *(code + 1);
+        switch (second_byte)
+        {
+          case 0x07:
+            printf("%-10s V%01X,%s", "MOV", reg, "DELAY");
+            break;
+          case 0x0a:
+            printf("%-10s V%01X", "WAITKEY", reg);
+            break;
+          case 0x15:
+            printf("%-10s %s,V%01X", "MOV", "DELAY", reg);
+            break;
+          case 0x18:
+            printf("%-10s %s,V%01X", "MOV", "SOUND", reg);
+            break;
+          case 0x1e:
+            printf("%-10s %s,V%01X", "ADD", "I", reg);
+            break;
+          case 0x29:
+            printf("%-10s V%01X", "SPRITECHAR", reg);
+            break;
+          case 0x33:
+            printf("%-10s V%01X", "MOVBCD", reg);
+            break;
+          case 0x55:
+            printf("%-10s (%s),V%01X-V%01X", "MOVM", "I", 0x00, reg);
+            break;
+          case 0x65:
+            printf("%-10s V%01X-V%01X,(%s)", "MOVM", 0x00, reg, "I");
+            break;
+          default:
+            printf("UNKNOWN F");
+            break;
+        }
+      }
       break;
   }
 }
